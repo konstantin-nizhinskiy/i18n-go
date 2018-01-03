@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 )
-func GetGin(key string,c *gin.Context, data ...map[string]interface{}) string {
+func GetGin(c *gin.Context,key string, data ...map[string]interface{}) string {
 	return Get(key,GetLangGin(c),data...)
 }
 func GetLangGin(c *gin.Context) string {
