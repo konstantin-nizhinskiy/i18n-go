@@ -6,11 +6,9 @@ import (
 	"time"
 )
 func GetGin(key string,c *gin.Context, data ...map[string]interface{}) string {
-	return Get(key,getLangGin(c),data...)
+	return Get(key,GetLangGin(c),data...)
 }
-
-
-func getLangGin(c *gin.Context) string {
+func GetLangGin(c *gin.Context) string {
 	cookie,err:=c.Request.Cookie(cookieName)
 	if err == nil {
 		return cookie.Value
@@ -23,6 +21,7 @@ func getLangGin(c *gin.Context) string {
 		Secure: false,
 		Path:     "/"}
 	http.SetCookie(c.Writer, &cookieNew)
+
 	return cookieNew.Value
 }
 

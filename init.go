@@ -28,6 +28,7 @@ func init(){
 		}
 		dbPool, err = pgx.NewConnPool(connPoolConfig)
 		if err != nil {
+			panic(err)
 			os.Exit(1)
 		}
 	}
