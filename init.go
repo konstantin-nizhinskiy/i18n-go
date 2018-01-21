@@ -2,8 +2,11 @@ package i18n
 
 import (
 	"github.com/jackc/pgx"
+	consulapi "github.com/hashicorp/consul/api"
 	"os"
 	"strconv"
+	"encoding/json"
+	"errors"
 )
 
 var typeStorage string
@@ -17,12 +20,36 @@ func init(){
 	cookieName=getOS("I18N_COOKIE_NAME","cc_lang")
 	langDefault=getOS("I18N_DEFAULT","en")
 }
-func Connect(host string,port string, user string, password string,database string) {
-	var err error
-	port_int, err := strconv.ParseUint(port, 10, 16)
+type dbConfig struct{
+	Id string `json:"id"`
+	Host string `json:"host"`
+	Port string `json:"port"`
+	User string `json:"user"`
+	DataBase string `json:"database"`
+	Shem string `json:"shem"`
+	Password string `json:"password"`
+}
+func isPanic(err error){
 	if(err!=nil){
 		panic(err)
 	}
+}
+func ConnectConsul(Consul *consulapi.Client, path string) {
+	var config dbConfig
+	kv := Consul.KV()
+	pair, _, err := kv.Get(path, nil)
+	isPanic(err)
+	err = json.Unmarshal(pair.Value, &config)
+	if (pair == nil) {
+		panic(errors.New("Not foud db app"))
+	}
+	Connect(config.Host,config.Port,config.User,config.Password,config.DataBase)
+
+}
+func Connect(host string,port string, user string, password string,database string) {
+	var err error
+	port_int, err := strconv.ParseUint(port, 10, 16)
+	isPanic(err)
 	connPoolConfig := pgx.ConnPoolConfig{
 		ConnConfig: pgx.ConnConfig{
 			Host:     host,
@@ -34,10 +61,7 @@ func Connect(host string,port string, user string, password string,database stri
 		MaxConnections: 5,
 	}
 	dbPool, err = pgx.NewConnPool(connPoolConfig)
-	if err != nil {
-		panic(err)
-		os.Exit(1)
-	}
+	isPanic(err)
 }
 func getOS(keyos string,def string) string {
 	value,err:=os.LookupEnv(keyos)
