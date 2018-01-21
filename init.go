@@ -2,7 +2,7 @@ package i18n
 
 import (
 	"github.com/jackc/pgx"
-	consulapi "github.com/hashicorp/consul/api"
+	"github.com/hashicorp/consul/api"
 	"os"
 	"strconv"
 	"encoding/json"
@@ -34,7 +34,7 @@ func isPanic(err error){
 		panic(err)
 	}
 }
-func ConnectConsul(Consul *consulapi.Client, path string) {
+func ConnectConsul(Consul *api.Client, path string) {
 	var config dbConfig
 	kv := Consul.KV()
 	pair, _, err := kv.Get(path, nil)
