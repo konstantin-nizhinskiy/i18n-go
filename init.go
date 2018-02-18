@@ -13,6 +13,8 @@ var typeStorage string
 var cookieName string
 var langDefault string
 var sqlTable string
+var Consul *api.Client
+var ConsulPath string
 var dbPool *pgx.ConnPool
 func init(){
 	sqlTable=getOS("I18N_SQL_TABLE","error_translate")
@@ -35,7 +37,11 @@ func isPanic(err error){
 		panic(err)
 	}
 }
-func ConnectConsul(Consul *api.Client, path string) {
+func ConnectConsul(c *api.Client, path string) {
+	Consul = c
+	ConsulPath = path
+}
+func getConnectConsul(Consul *api.Client, path string) {
 	var config dbConfig
 	kv := Consul.KV()
 	pair, _, err := kv.Get(path, nil)
@@ -86,5 +92,12 @@ func getOS(keyos string,def string) string {
 	}
 }
 func GetPool() *pgx.ConnPool {
+	if(dbPool==nil){
+		if(Consul!=nil){
+			getConnectConsul(Consul,ConsulPath)
+		}else{
+			panic(errors.New("Not connect to db"))
+		}
+	}
 	return dbPool
 }
