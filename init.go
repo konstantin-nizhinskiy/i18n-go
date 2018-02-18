@@ -23,6 +23,7 @@ func init(){
 type dbConfig struct{
 	Id string `json:"id"`
 	Host string `json:"host"`
+	Service string `json:"service"`
 	Port string `json:"port"`
 	User string `json:"user"`
 	DataBase string `json:"database"`
@@ -42,6 +43,19 @@ func ConnectConsul(Consul *api.Client, path string) {
 	err = json.Unmarshal(pair.Value, &config)
 	if (pair == nil) {
 		panic(errors.New("Not foud db app"))
+	}
+	if(len(config.Service)>0){
+		catalog := Consul.Catalog()
+		catalogService, _, err :=catalog.Service(config.Service,"",nil)
+		isPanic(err)
+		if (catalogService == nil || len(catalogService)==0) {
+			panic(errors.New("Not foud service["+config.Service+"]"))
+		}
+		if(len(catalogService[0].ServiceAddress)==0){
+			config.Host = catalogService[0].Address
+		}else{
+			config.Host = catalogService[0].ServiceAddress
+		}
 	}
 	Connect(config.Host,config.Port,config.User,config.Password,config.DataBase)
 
